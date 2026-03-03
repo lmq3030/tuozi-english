@@ -1,6 +1,16 @@
-import { Redis } from '@upstash/redis';
+import Redis from 'ioredis';
 
-const redis = Redis.fromEnv();
+let redis;
+function getRedis() {
+  if (!redis) {
+    redis = new Redis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: 2,
+      lazyConnect: true,
+    });
+  }
+  return redis;
+}
+
 const SCORES_KEY = 'tuozi:scores';
 
 export default async function handler(req, res) {
@@ -12,9 +22,10 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  const client = getRedis();
+
   if (req.method === 'GET') {
-    const scores = await redis.hgetall(SCORES_KEY);
-    // Returns { chen: "5", zhang: "3", zhu: "1" } or null
+    const scores = await client.hgetall(SCORES_KEY);
     const result = {};
     if (scores) {
       for (const [key, val] of Object.entries(scores)) {
@@ -36,7 +47,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Unknown player' });
     }
 
-    const newScore = await redis.hincrby(SCORES_KEY, playerId, delta);
+    const newScore = await client.hincrby(SCORES_KEY, playerId, delta);
     return res.status(200).json({ playerId, score: newScore });
   }
 
