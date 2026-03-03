@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>跟着佗子学英语 - 积分排行榜</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root {
+    --poke-red: #E3350D;
+    --poke-blue: #3B4CCA;
+    --poke-yellow: #FFCB05;
+    --poke-gold: #B3A125;
+    --poke-dark: #2A2A5A;
+    --poke-light: #F5F0E8;
+    --card-fire: linear-gradient(135deg, #FF6B35 0%, #E3350D 50%, #C62828 100%);
+    --card-water: linear-gradient(135deg, #42A5F5 0%, #1565C0 50%, #0D47A1 100%);
+    --card-grass: linear-gradient(135deg, #66BB6A 0%, #2E7D32 50%, #1B5E20 100%);
+    --shadow-pop: 0 8px 32px rgba(42,42,90,0.18), 0 2px 8px rgba(42,42,90,0.12);
+    --shadow-card: 0 12px 40px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  body {
+    font-family: 'Fredoka', 'Noto Sans SC', sans-serif;
+    background: var(--poke-light);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Pokeball pattern background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(227,53,13,0.06) 0%, transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(59,76,202,0.06) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(255,203,5,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Floating Pokeballs */
+  .pokeball-bg {
+    position: fixed;
+    border-radius: 50%;
+    opacity: 0.06;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .pokeball-bg::before {
+    content: '';
+    position: absolute;
+    top: 48%; left: 0; right: 0;
+    height: 4%;
+    background: var(--poke-dark);
+  }
+  .pokeball-bg:nth-child(1) {
+    width: 200px; height: 200px;
+    top: 5%; left: -40px;
+    background: var(--poke-red);
+    animation: floatSlow 18s ease-in-out infinite;
+  }
+  .pokeball-bg:nth-child(2) {
+    width: 140px; height: 140px;
+    top: 60%; right: -30px; left: auto;
+    background: var(--poke-blue);
+    animation: floatSlow 22s ease-in-out infinite reverse;
+  }
+  .pokeball-bg:nth-child(3) {
+    width: 100px; height: 100px;
+    bottom: 10%; left: 10%;
+    background: var(--poke-yellow);
+    animation: floatSlow 15s ease-in-out infinite;
+  }
+
+  @keyframes floatSlow {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-30px) rotate(15deg); }
+  }
+
+  .container {
+    max-width: 660px;
+    margin: 0 auto;
+    padding: 40px 20px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 44px;
+    position: relative;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--poke-red);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 18px;
+    border-radius: 30px;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 16px rgba(227,53,13,0.3);
+  }
+
+  .header-badge .pokeball-icon {
+    width: 16px; height: 16px;
+    background: white;
+    border-radius: 50%;
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .header-badge .pokeball-icon::before {
+    content: '';
+    position: absolute;
+    top: 47%; left: 0; right: 0; height: 6%;
+    background: var(--poke-red);
+  }
+  .header-badge .pokeball-icon::after {
+    content: '';
+    position: absolute;
+    width: 5px; height: 5px;
+    background: white;
+    border: 1.5px solid var(--poke-red);
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+  }
+
+  .header h1 {
+    font-family: 'Fredoka', 'Noto Sans SC', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--poke-dark);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .header h1 span {
+    display: block;
+    background: linear-gradient(135deg, var(--poke-red), var(--poke-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header p {
+    color: #7A7A9A;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  /* Leaderboard */
+  .leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Player Card */
+  .player-card {
+    border-radius: 20px;
+    padding: 3px;
+    position: relative;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.4s ease,
+                opacity 0.3s ease;
+    box-shadow: var(--shadow-card);
+    animation: cardEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .player-card:nth-child(1) { animation-delay: 0.1s; }
+  .player-card:nth-child(2) { animation-delay: 0.2s; }
+  .player-card:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes cardEnter {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .player-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.22), 0 8px 20px rgba(0,0,0,0.12);
+  }
+
+  .player-card[data-type="fire"] { background: var(--card-fire); }
+  .player-card[data-type="water"] { background: var(--card-water); }
+  .player-card[data-type="grass"] { background: var(--card-grass); }
+
+  .card-inner {
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    overflow: visible;
+    backdrop-filter: blur(10px);
+  }
+
+  /* Rank badge - inline next to player name */
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    border-radius: 8px;
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+  .player-card[data-type="fire"] .rank-badge { background: linear-gradient(135deg, #FF6B35, #E3350D); }
+  .player-card[data-type="water"] .rank-badge { background: linear-gradient(135deg, #42A5F5, #1565C0); }
+  .player-card[data-type="grass"] .rank-badge { background: linear-gradient(135deg, #66BB6A, #2E7D32); }
+
+  .rank-badge.rank-1 {
+    background: linear-gradient(135deg, var(--poke-yellow), #FFA000) !important;
+    color: var(--poke-dark);
+    font-size: 14px;
+    width: 30px;
+    height: 30px;
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes glowPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,203,5,0.4); }
+    50% { box-shadow: 0 0 12px 4px rgba(255,203,5,0.5); }
+  }
+
+  /* Decorative type pattern on card */
+  .card-inner::after {
+    content: '';
+    position: absolute;
+    right: -20px; top: -20px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    opacity: 0.04;
+    pointer-events: none;
+  }
+  .player-card[data-type="fire"] .card-inner::after { background: #E3350D; }
+  .player-card[data-type="water"] .card-inner::after { background: #1565C0; }
+  .player-card[data-type="grass"] .card-inner::after { background: #2E7D32; }
+
+  /* Avatar */
+  .avatar-wrap {
+    flex-shrink: 0;
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    padding: 3px;
+    position: relative;
+  }
+  .player-card[data-type="fire"] .avatar-wrap { background: var(--card-fire); }
+  .player-card[data-type="water"] .avatar-wrap { background: var(--card-water); }
+  .player-card[data-type="grass"] .avatar-wrap { background: var(--card-grass); }
+
+  .avatar-wrap img {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    background: white;
+    display: block;
+  }
+
+  /* Sparkle on first place avatar */
+  .rank-1-card .avatar-wrap::before {
+    content: '\2726';
+    position: absolute;
+    top: -4px; right: -2px;
+    font-size: 18px;
+    color: var(--poke-yellow);
+    animation: sparkle 1.5s ease-in-out infinite;
+    z-index: 3;
+    filter: drop-shadow(0 0 4px rgba(255,203,5,0.6));
+  }
+  @keyframes sparkle {
+    0%,100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    50% { opacity: 0.5; transform: scale(1.3) rotate(20deg); }
+  }
+
+  /* Player info */
+  .player-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .player-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .player-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--poke-dark);
+    line-height: 1.2;
+  }
+
+  .player-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.5;
+  }
+  .player-card[data-type="fire"] .player-title { color: #E3350D; }
+  .player-card[data-type="water"] .player-title { color: #1565C0; }
+  .player-card[data-type="grass"] .player-title { color: #2E7D32; }
+
+  /* Score section - simplified, no buttons */
+  .score-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .score-display {
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--poke-dark);
+    line-height: 1;
+    min-width: 60px;
+    text-align: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+
+  .score-display.bump {
+    animation: scoreBump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes scoreBump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+
+  .score-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9A9ABB;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  /* Corner buttons */
+  .btn-corner {
+    position: absolute;
+    width: 32px; height: 32px;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    color: white;
+    z-index: 5;
+    line-height: 1;
+  }
+
+  .btn-corner-sub {
+    top: -8px;
+    left: -8px;
+    background: linear-gradient(135deg, #EF5350, #C62828);
+    box-shadow: 0 3px 10px rgba(198,40,40,0.35);
+  }
+  .btn-corner-sub:hover {
+    transform: scale(1.15);
+    box-shadow: 0 5px 16px rgba(198,40,40,0.45);
+  }
+  .btn-corner-sub:active { transform: scale(0.92); }
+
+  .btn-corner-add {
+    top: -8px;
+    right: -8px;
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    box-shadow: 0 3px 10px rgba(46,125,50,0.35);
+  }
+  .btn-corner-add:hover {
+    transform: scale(1.15);
+    box-shadow: 0 5px 16px rgba(46,125,50,0.45);
+  }
+  .btn-corner-add:active { transform: scale(0.92); }
+
+  /* Add score popup */
+  .add-score-popup {
+    position: absolute;
+    top: -8px;
+    right: 28px;
+    background: white;
+    border-radius: 14px;
+    padding: 6px;
+    box-shadow: 0 8px 32px rgba(42,42,90,0.2), 0 2px 8px rgba(42,42,90,0.1);
+    z-index: 20;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(10px) scale(0.9);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .add-score-popup.visible {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0) scale(1);
+  }
+
+  .add-score-option {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 10px;
+    background: #F0FAF0;
+    color: #2E7D32;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Fredoka', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .add-score-option:hover {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46,125,50,0.3);
+  }
+  .add-score-option:active { transform: scale(0.95); }
+
+  /* Score change popup animation */
+  .score-popup {
+    position: absolute;
+    font-size: 18px;
+    font-weight: 700;
+    pointer-events: none;
+    z-index: 10;
+    animation: popUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  .score-popup.positive { color: #4CAF50; }
+  .score-popup.negative { color: #EF5350; }
+
+  @keyframes popUp {
+    0% { opacity: 1; transform: translateY(0) scale(0.5); }
+    50% { opacity: 1; transform: translateY(-30px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-50px) scale(0.8); }
+  }
+
+  /* Card reorder animation */
+  .player-card.reordering {
+    animation: reorderShake 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes reorderShake {
+    0% { transform: scale(0.97); opacity: 0.7; }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Footer area */
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 2px dashed rgba(42,42,90,0.08);
+  }
+  .footer p {
+    font-size: 13px;
+    color: #AEAECC;
+    font-weight: 500;
+  }
+  .footer .pokeball-mini {
+    display: inline-block;
+    width: 12px; height: 12px;
+    background: var(--poke-red);
+    border-radius: 50%;
+    vertical-align: middle;
+    margin: 0 4px;
+    position: relative;
+  }
+  .footer .pokeball-mini::before {
+    content: '';
+    position: absolute;
+    top: 47%; left: 0; right: 0; height: 6%;
+    background: white;
+  }
+
+  /* Subtract score modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(42,42,90,0.5);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: white;
+    border-radius: 24px;
+    padding: 32px;
+    width: 360px;
+    max-width: 90vw;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+    transform: translateY(20px) scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .modal-overlay.active .modal {
+    transform: translateY(0) scale(1);
+  }
+
+  .modal h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--poke-dark);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .modal .modal-player-name {
+    font-size: 15px;
+    color: #9A9ABB;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 500;
+  }
+
+  .modal-field {
+    margin-bottom: 16px;
+  }
+  .modal-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--poke-dark);
+    margin-bottom: 6px;
+  }
+
+  .modal-field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #E8E8F0;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Fredoka', 'Noto Sans SC', sans-serif;
+    color: var(--poke-dark);
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+    min-height: 72px;
+  }
+  .modal-field textarea:focus { border-color: var(--poke-red); }
+
+  .modal-field input[type="number"] {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #E8E8F0;
+    border-radius: 14px;
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    font-family: 'Fredoka', sans-serif;
+    color: var(--poke-dark);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal-field input[type="number"]:focus { border-color: var(--poke-red); }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .modal-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Fredoka', 'Noto Sans SC', sans-serif;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .modal-btn:hover { transform: translateY(-2px); }
+  .modal-btn:active { transform: scale(0.97); }
+  .modal-btn-cancel {
+    background: #F0F0F5;
+    color: #7A7A9A;
+  }
+  .modal-btn-confirm {
+    background: linear-gradient(135deg, #EF5350, #C62828);
+    color: white;
+    box-shadow: 0 4px 16px rgba(198,40,40,0.3);
+  }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    .container { padding: 24px 14px 40px; }
+    .header h1 { font-size: 26px; }
+    .card-inner { padding: 18px 14px; gap: 14px; }
+    .avatar-wrap { width: 68px; height: 68px; }
+    .score-display { font-size: 32px; }
+    .player-name { font-size: 18px; }
+    .rank-badge { width: 24px; height: 24px; font-size: 11px; }
+    .btn-corner { width: 28px; height: 28px; font-size: 16px; }
+    .add-score-popup { right: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="pokeball-bg"></div>
+<div class="pokeball-bg"></div>
+<div class="pokeball-bg"></div>
+
+<div class="container">
+  <div class="header">
+    <div class="header-badge">
+      <span class="pokeball-icon"></span>
+      TUOZI ENGLISH LEAGUE
+    </div>
+    <h1><span>跟着佗子学英语</span></h1>
+    <h1 style="font-size:28px; margin-top: 2px;">积分排行榜</h1>
+    <p>成为英语大师，赢取最多积分！</p>
+  </div>
+
+  <div class="leaderboard" id="leaderboard"></div>
+
+  <div class="footer">
+    <p><span class="pokeball-mini"></span> Gotta learn 'em all! <span class="pokeball-mini"></span></p>
+  </div>
+</div>
+
+<!-- Subtract Score Modal -->
+<div class="modal-overlay" id="subtractModal">
+  <div class="modal">
+    <h3>减分</h3>
+    <p class="modal-player-name" id="subtractPlayerName"></p>
+    <div class="modal-field">
+      <label>扣分原因</label>
+      <textarea id="subtractReason" placeholder="请输入扣分原因..."></textarea>
+    </div>
+    <div class="modal-field">
+      <label>扣除分数</label>
+      <input type="number" id="subtractAmount" placeholder="0" min="1" />
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeSubtractModal()">取消</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmSubtract()">确认扣分</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Player data
+  const players = [
+    {
+      id: 'chen',
+      name: '陈志强',
+      pinyin: 'chenzhiqiang',
+      type: 'fire',
+      title: '离卦 · 火属性',
+      avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png',
+      score: 0
+    },
+    {
+      id: 'zhang',
+      name: '张澜青',
+      pinyin: 'zhanglanqing',
+      type: 'water',
+      title: '坎卦 · 水属性',
+      avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png',
+      score: 0
+    },
+    {
+      id: 'zhu',
+      name: '朱云峰',
+      pinyin: 'zhuyunfeng',
+      type: 'grass',
+      title: '艮巽 · 草属性',
+      avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/3.png',
+      score: 0
+    }
+  ];
+
+  // Load scores from API (fallback to localStorage)
+  async function loadScores() {
+    try {
+      const res = await fetch('/api/scores');
+      if (res.ok) {
+        const data = await res.json();
+        players.forEach(p => {
+          if (data[p.id] !== undefined) p.score = data[p.id];
+        });
+        // Sync to localStorage as cache
+        const cache = {};
+        players.forEach(p => cache[p.id] = p.score);
+        localStorage.setItem('tuozi-leaderboard', JSON.stringify(cache));
+        return;
+      }
+    } catch (e) {
+      console.warn('API unavailable, using localStorage fallback');
+    }
+    // Fallback to localStorage
+    const saved = localStorage.getItem('tuozi-leaderboard');
+    if (saved) {
+      const data = JSON.parse(saved);
+      players.forEach(p => {
+        if (data[p.id] !== undefined) p.score = data[p.id];
+      });
+    }
+  }
+
+  async function saveScore(playerId, delta) {
+    // Update localStorage immediately
+    const cache = {};
+    players.forEach(p => cache[p.id] = p.score);
+    localStorage.setItem('tuozi-leaderboard', JSON.stringify(cache));
+    // Sync to API
+    try {
+      await fetch('/api/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId, delta })
+      });
+    } catch (e) {
+      console.warn('API save failed, score saved locally');
+    }
+  }
+
+  // Sort: by score descending, then by pinyin ascending
+  function getSortedPlayers() {
+    return [...players].sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.pinyin.localeCompare(b.pinyin);
+    });
+  }
+
+  function getSortedPlayersIds() {
+    return getSortedPlayers().map(p => p.id);
+  }
+
+  // Track which popup is open
+  let activePopupId = null;
+
+  // Render leaderboard
+  function render() {
+    const board = document.getElementById('leaderboard');
+    const sorted = getSortedPlayers();
+
+    board.innerHTML = sorted.map((player, idx) => `
+      <div class="player-card ${idx === 0 ? 'rank-1-card' : ''}"
+           data-type="${player.type}" data-id="${player.id}">
+        <div class="card-inner">
+          <button class="btn-corner btn-corner-sub" data-player="${player.id}" title="减分">\u2212</button>
+          <button class="btn-corner btn-corner-add" data-player="${player.id}" title="加分">+</button>
+          <div class="add-score-popup" id="popup-${player.id}">
+            <button class="add-score-option" data-player="${player.id}" data-val="1">+1</button>
+            <button class="add-score-option" data-player="${player.id}" data-val="2">+2</button>
+            <button class="add-score-option" data-player="${player.id}" data-val="3">+3</button>
+            <button class="add-score-option" data-player="${player.id}" data-val="5">+5</button>
+            <button class="add-score-option" data-player="${player.id}" data-val="10">+10</button>
+          </div>
+          <div class="avatar-wrap">
+            <img src="${player.avatar}" alt="${player.name}" />
+          </div>
+          <div class="player-info">
+            <div class="player-name-row">
+              <div class="rank-badge ${idx === 0 ? 'rank-1' : ''}">#${idx + 1}</div>
+              <div class="player-name">${player.name}</div>
+            </div>
+            <div class="player-title">${player.title}</div>
+          </div>
+          <div class="score-section">
+            <div class="score-label">积分</div>
+            <div class="score-display" id="score-${player.id}">${player.score}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Bind corner button events
+    board.querySelectorAll('.btn-corner-add').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const playerId = btn.dataset.player;
+        toggleAddPopup(playerId);
+      });
+    });
+
+    board.querySelectorAll('.btn-corner-sub').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const playerId = btn.dataset.player;
+        const player = players.find(p => p.id === playerId);
+        if (player) openSubtractModal(player.id, player.name);
+      });
+    });
+
+    board.querySelectorAll('.add-score-option').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const playerId = btn.dataset.player;
+        const val = parseInt(btn.dataset.val);
+        closeAllPopups();
+        changeScore(playerId, val);
+      });
+    });
+  }
+
+  // Add score popup
+  function toggleAddPopup(playerId) {
+    if (activePopupId === playerId) {
+      closeAllPopups();
+      return;
+    }
+    closeAllPopups();
+    const popup = document.getElementById(`popup-${playerId}`);
+    if (popup) {
+      popup.classList.add('visible');
+      activePopupId = playerId;
+    }
+  }
+
+  function closeAllPopups() {
+    document.querySelectorAll('.add-score-popup.visible').forEach(p => {
+      p.classList.remove('visible');
+    });
+    activePopupId = null;
+  }
+
+  // Close popups on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.btn-corner-add') && !e.target.closest('.add-score-popup')) {
+      closeAllPopups();
+    }
+  });
+
+  // Change score
+  function changeScore(playerId, delta) {
+    const player = players.find(p => p.id === playerId);
+    if (!player) return;
+
+    player.score += delta;
+    saveScore(playerId, delta);
+
+    // Animate score bump
+    const scoreEl = document.getElementById(`score-${playerId}`);
+    if (scoreEl) {
+      scoreEl.textContent = player.score;
+      scoreEl.classList.remove('bump');
+      void scoreEl.offsetWidth; // trigger reflow
+      scoreEl.classList.add('bump');
+
+      // Show popup
+      const popup = document.createElement('div');
+      popup.className = `score-popup ${delta > 0 ? 'positive' : 'negative'}`;
+      popup.textContent = delta > 0 ? `+${delta}` : `${delta}`;
+      scoreEl.style.position = 'relative';
+      scoreEl.appendChild(popup);
+      setTimeout(() => popup.remove(), 800);
+    }
+
+    // Re-sort after delay for animation
+    setTimeout(() => {
+      const oldOrder = getSortedPlayersIds();
+      render();
+      const newOrder = getSortedPlayersIds();
+      if (JSON.stringify(oldOrder) !== JSON.stringify(newOrder)) {
+        document.querySelectorAll('.player-card').forEach(card => {
+          card.classList.add('reordering');
+          setTimeout(() => card.classList.remove('reordering'), 500);
+        });
+      }
+    }, 300);
+  }
+
+  // Subtract modal
+  let subtractPlayerId = null;
+
+  function openSubtractModal(playerId, playerName) {
+    subtractPlayerId = playerId;
+    document.getElementById('subtractPlayerName').textContent = playerName;
+    document.getElementById('subtractReason').value = '';
+    document.getElementById('subtractAmount').value = '';
+    document.getElementById('subtractModal').classList.add('active');
+    setTimeout(() => document.getElementById('subtractReason').focus(), 300);
+  }
+
+  function closeSubtractModal() {
+    document.getElementById('subtractModal').classList.remove('active');
+    subtractPlayerId = null;
+  }
+
+  function confirmSubtract() {
+    const amount = parseInt(document.getElementById('subtractAmount').value);
+    if (subtractPlayerId && !isNaN(amount) && amount > 0) {
+      changeScore(subtractPlayerId, -amount);
+    }
+    closeSubtractModal();
+  }
+
+  // Keyboard shortcuts in subtract modal
+  document.getElementById('subtractAmount').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') confirmSubtract();
+    if (e.key === 'Escape') closeSubtractModal();
+  });
+  document.getElementById('subtractReason').addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSubtractModal();
+  });
+
+  // Click overlay to close subtract modal
+  document.getElementById('subtractModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeSubtractModal();
+  });
+
+  // Init
+  async function init() {
+    await loadScores();
+    render();
+  }
+  init();
+</script>
+
+</body>
+</html>
