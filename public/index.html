@@ -311,16 +311,6 @@
     line-height: 1.2;
   }
 
-  .player-title {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.5;
-  }
-  .player-card[data-type="fire"] .player-title { color: #E3350D; }
-  .player-card[data-type="water"] .player-title { color: #1565C0; }
-  .player-card[data-type="grass"] .player-title { color: #2E7D32; }
 
   /* Score section - simplified, no buttons */
   .score-section {
@@ -657,6 +647,22 @@
   </div>
 </div>
 
+<!-- Password Modal -->
+<div class="modal-overlay" id="passwordModal">
+  <div class="modal">
+    <h3>请输入密码</h3>
+    <p class="modal-player-name">修改积分需要验证身份</p>
+    <div class="modal-field">
+      <input type="password" id="passwordInput" placeholder="请输入密码" style="width:100%;padding:14px 16px;border:2px solid #E8E8F0;border-radius:14px;font-size:20px;font-weight:700;text-align:center;font-family:'Fredoka',sans-serif;color:var(--poke-dark);outline:none;transition:border-color 0.2s;" />
+      <p id="passwordError" style="color:#EF5350;font-size:13px;font-weight:600;text-align:center;margin-top:8px;display:none;">密码错误，请重试</p>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closePasswordModal()">取消</button>
+      <button class="modal-btn modal-btn-confirm" style="background:linear-gradient(135deg,#4CAF50,#2E7D32);box-shadow:0 4px 16px rgba(46,125,50,0.3);" onclick="submitPassword()">确认</button>
+    </div>
+  </div>
+</div>
+
 <!-- Subtract Score Modal -->
 <div class="modal-overlay" id="subtractModal">
   <div class="modal">
@@ -685,7 +691,6 @@
       name: '陈志强',
       pinyin: 'chenzhiqiang',
       type: 'fire',
-      title: '离卦 · 火属性',
       avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png',
       score: 0
     },
@@ -694,7 +699,6 @@
       name: '张澜青',
       pinyin: 'zhanglanqing',
       type: 'water',
-      title: '坎卦 · 水属性',
       avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png',
       score: 0
     },
@@ -703,7 +707,6 @@
       name: '朱云峰',
       pinyin: 'zhuyunfeng',
       type: 'grass',
-      title: '艮巽 · 草属性',
       avatar: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png',
       score: 0
     }
@@ -766,6 +769,56 @@
     return getSortedPlayers().map(p => p.id);
   }
 
+  // Auth check
+  const AUTH_PASSWORD = '686';
+  let pendingAuthCallback = null;
+
+  function isAuthorized() {
+    return localStorage.getItem('tuozi-authorized') === 'true';
+  }
+
+  function checkAuth(callback) {
+    if (isAuthorized()) {
+      callback();
+      return;
+    }
+    pendingAuthCallback = callback;
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('passwordError').style.display = 'none';
+    document.getElementById('passwordModal').classList.add('active');
+    setTimeout(() => document.getElementById('passwordInput').focus(), 300);
+  }
+
+  function submitPassword() {
+    const input = document.getElementById('passwordInput').value;
+    if (input === AUTH_PASSWORD) {
+      localStorage.setItem('tuozi-authorized', 'true');
+      document.getElementById('passwordModal').classList.remove('active');
+      if (pendingAuthCallback) {
+        pendingAuthCallback();
+        pendingAuthCallback = null;
+      }
+    } else {
+      document.getElementById('passwordError').style.display = 'block';
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('passwordInput').focus();
+    }
+  }
+
+  function closePasswordModal() {
+    document.getElementById('passwordModal').classList.remove('active');
+    pendingAuthCallback = null;
+  }
+
+  document.getElementById('passwordInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') submitPassword();
+    if (e.key === 'Escape') closePasswordModal();
+  });
+
+  document.getElementById('passwordModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closePasswordModal();
+  });
+
   // Track which popup is open
   let activePopupId = null;
 
@@ -795,7 +848,6 @@
               <div class="rank-badge ${idx === 0 ? 'rank-1' : ''}">#${idx + 1}</div>
               <div class="player-name">${player.name}</div>
             </div>
-            <div class="player-title">${player.title}</div>
           </div>
           <div class="score-section">
             <div class="score-label">积分</div>
@@ -810,7 +862,7 @@
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const playerId = btn.dataset.player;
-        toggleAddPopup(playerId);
+        checkAuth(() => toggleAddPopup(playerId));
       });
     });
 
@@ -819,7 +871,7 @@
         e.stopPropagation();
         const playerId = btn.dataset.player;
         const player = players.find(p => p.id === playerId);
-        if (player) openSubtractModal(player.id, player.name);
+        if (player) checkAuth(() => openSubtractModal(player.id, player.name));
       });
     });
 
